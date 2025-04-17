@@ -5,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FARA GAME</title>
     <style>
-      *{
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
       body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         background-color: #f5f5f5;
         margin: 0;
         padding: 20px;
@@ -28,17 +26,14 @@
         margin-bottom: 30px;
       }
       .price-setting {
-        background-color: #b2cae2;
+        background-color: #f8f9fa;
         padding: 15px;
         border-radius: 5px;
         margin-bottom: 20px;
       }
       .input-group {
-        width: 100%;
         display: flex;
-        align-items: center;
-        justify-content: space-evenly;
-        flex-direction: row;
+        flex-direction: column;
         margin-bottom: 10px;
       }
       label {
@@ -163,7 +158,7 @@
       }
       .stats-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
         gap: 20px;
       }
       .stat-card {
@@ -194,6 +189,25 @@
         justify-content: space-between;
         margin-bottom: 5px;
       }
+      .price-info {
+        background-color: #f0f8ff;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+      .price-info h4 {
+        margin-top: 0;
+        margin-bottom: 5px;
+      }
+      .price-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+      }
+      .price-item {
+        display: flex;
+        justify-content: space-between;
+      }
     </style>
   </head>
   <body>
@@ -201,42 +215,45 @@
       <h1>FARA GAME</h1>
 
       <div class="price-setting">
-        <div class="input-group">
-          <div>
-            <label for="globalPricePerMinute">قیمت هر دقیقه (تومان):</label>
-            <input type="number" id="globalPricePerMinute" value="1000" />
+        <div class="price-info">
+          <h4>لیست قیمت‌ها بر اساس تعداد دسته (ساعتی):</h4>
+          <div class="price-list">
+            <div class="price-item"><span>1 دسته:</span> <span>40,000 تومان/ساعت</span></div>
+            <div class="price-item"><span>2 دسته:</span> <span>60,000 تومان/ساعت</span></div>
+            <div class="price-item"><span>3 دسته:</span> <span>80,000 تومان/ساعت</span></div>
+            <div class="price-item"><span>4 دسته:</span> <span>100,000 تومان/ساعت</span></div>
           </div>
-          <button id="updatePriceBtn">بروزرسانی قیمت برای همه سیستم‌ها</button>
         </div>
       </div>
 
       <div class="tabs">
-        <div class="tab active" data-tab="active">
-          سیستم‌های فعال (<span id="active-count">0</span> عدد)
-        </div>
-        <div class="tab" data-tab="finished">
-          جلسات تمام شده (<span id="finished-count">0</span> عدد)
-        </div>
+        <div class="tab active" data-tab="active">سیستم‌های فعال (<span id="active-count">0</span> عدد)</div>
+        <div class="tab" data-tab="finished">جلسات تمام شده (<span id="finished-count">0</span> عدد)</div>
         <div class="tab" data-tab="stats">اطلاعات و آمار</div>
       </div>
 
       <div class="tab-content active" id="active-systems">
-        <div class="systems-container" id="activeSystemsContainer"></div>
+        <div class="systems-container" id="activeSystemsContainer">
+          <!-- سیستم‌های فعال اینجا نمایش داده می‌شوند -->
+        </div>
       </div>
 
       <div class="tab-content" id="finished-systems">
-        <button class="clear-all-btn" onclick="clearAllFinishedSessions()">
-          حذف همه جلسات تمام شده
-        </button>
-        <div class="systems-container" id="finishedSystemsContainer"></div>
+        <button class="clear-all-btn" onclick="clearAllFinishedSessions()">حذف همه جلسات تمام شده</button>
+        <div class="systems-container" id="finishedSystemsContainer">
+          <!-- سیستم‌های تمام شده اینجا نمایش داده می‌شوند -->
+        </div>
       </div>
 
       <div class="tab-content" id="stats-systems">
-        <div class="stats-container" id="statsContainer"></div>
+        <div class="stats-container" id="statsContainer">
+          <!-- آمار و اطلاعات اینجا نمایش داده می‌شوند -->
+        </div>
       </div>
     </div>
 
     <script>
+      // عناصر DOM
       const activeSystemsContainer = document.getElementById(
         "activeSystemsContainer"
       );
@@ -244,19 +261,25 @@
         "finishedSystemsContainer"
       );
       const statsContainer = document.getElementById("statsContainer");
-      const globalPricePerMinuteInput = document.getElementById(
-        "globalPricePerMinute"
-      );
-      const updatePriceBtn = document.getElementById("updatePriceBtn");
       const tabs = document.querySelectorAll(".tab");
       const tabContents = document.querySelectorAll(".tab-content");
       const activeCountSpan = document.getElementById("active-count");
       const finishedCountSpan = document.getElementById("finished-count");
 
+      // قیمت‌های پایه بر اساس تعداد دسته (هزار تومان در ساعت)
+      const HOURLY_RATES = {
+        1: 40000,
+        2: 60000,
+        3: 80000,
+        4: 100000
+      };
+
+      // متغیرهای حالت
       let systems = [];
       let finishedSessions = [];
       let timers = {};
 
+      // بارگذاری داده‌ها از localStorage
       function loadData() {
         const savedData = JSON.parse(
           localStorage.getItem("gameNetAdvancedData")
@@ -268,49 +291,52 @@
               .fill()
               .map((_, i) => ({
                 id: i + 1,
-                pricePerMinute: 500,
+                controllerCount: 1, // تعداد دسته پیش‌فرض
                 status: "available",
                 currentSession: null,
               }));
           finishedSessions = savedData.finishedSessions || [];
-
-          systems.forEach((system) => {
+          
+          // راه اندازی مجدد تایمرها برای جلسات فعال
+          systems.forEach(system => {
             if (system.status === "busy" && system.currentSession) {
-              system.currentSession.startTime = new Date(
-                system.currentSession.startTime
-              );
+              // تبدیل رشته تاریخ به شیء Date
+              system.currentSession.startTime = new Date(system.currentSession.startTime);
               startTimerForSystem(system.id);
             }
           });
         } else {
+          // ایجاد 5 سیستم پیش‌فرض
           systems = Array(5)
             .fill()
             .map((_, i) => ({
               id: i + 1,
-              pricePerMinute: 500,
+              controllerCount: 1, // تعداد دسته پیش‌فرض
               status: "available",
               currentSession: null,
             }));
           finishedSessions = [];
         }
-
+        
         updateCounts();
       }
 
+      // ذخیره داده‌ها در localStorage
       function saveData() {
-        const systemsToSave = systems.map((system) => {
+        // قبل از ذخیره، مطمئن شویم که currentSession به صورت سریالی ذخیره می‌شود
+        const systemsToSave = systems.map(system => {
           if (system.status === "busy" && system.currentSession) {
             return {
               ...system,
               currentSession: {
                 ...system.currentSession,
-                startTime: system.currentSession.startTime.toISOString(),
-              },
+                startTime: system.currentSession.startTime.toISOString() // ذخیره تاریخ به صورت رشته
+              }
             };
           }
           return system;
         });
-
+        
         localStorage.setItem(
           "gameNetAdvancedData",
           JSON.stringify({
@@ -318,19 +344,30 @@
             finishedSessions,
           })
         );
-
+        
         updateCounts();
       }
 
+      // محاسبه هزینه بر اساس تعداد دسته و زمان (ساعتی)
+      function calculateCost(controllerCount, milliseconds) {
+        const hours = milliseconds / 3600000; // تبدیل میلی‌ثانیه به ساعت
+        const hourlyRate = HOURLY_RATES[controllerCount] || HOURLY_RATES[1];
+        return Math.ceil(hours) * hourlyRate; // محاسبه بر اساس ساعت کامل
+      }
+
+      // شروع تایمر برای یک سیستم
       function startTimerForSystem(systemId) {
+        // اگر تایمر از قبل وجود دارد، آن را پاک کنید
         if (timers[systemId]) {
           clearInterval(timers[systemId]);
         }
-
+        
+        // تایمر جدید را راه اندازی کنید
         timers[systemId] = setInterval(() => updateSystemTimer(systemId), 1000);
-        updateSystemTimer(systemId);
+        updateSystemTimer(systemId); // فوراً به روز رسانی کنید
       }
 
+      // شروع session روی یک سیستم
       function startSession(systemId) {
         const system = systems.find((s) => s.id === systemId);
         if (!system || system.status !== "available") return;
@@ -338,11 +375,18 @@
         const customerName = prompt("نام مشتری را وارد کنید:", "مشتری ناشناس");
         if (customerName === null) return;
 
+        // دریافت تعداد دسته‌ها از کاربر
+        const controllerCount = prompt("تعداد دسته‌ها را وارد کنید (1 تا 4):", system.controllerCount);
+        if (controllerCount === null) return;
+        
+        const parsedCount = Math.min(Math.max(parseInt(controllerCount) || 1, 1), 4);
+
+        system.controllerCount = parsedCount;
         system.status = "busy";
         system.currentSession = {
           customerName,
+          controllerCount: parsedCount,
           startTime: new Date(),
-          pricePerMinute: system.pricePerMinute,
         };
 
         startTimerForSystem(systemId);
@@ -350,6 +394,7 @@
         renderSystems();
       }
 
+      // توقف session روی یک سیستم
       function stopSession(systemId) {
         const system = systems.find((s) => s.id === systemId);
         if (!system || system.status !== "busy") return;
@@ -359,19 +404,21 @@
 
         const endTime = new Date();
         const duration = endTime - system.currentSession.startTime;
-        const cost =
-          Math.ceil(duration / 60000) * system.currentSession.pricePerMinute;
+        const cost = calculateCost(system.currentSession.controllerCount, duration);
 
+        // ذخیره session تمام شده
         finishedSessions.unshift({
           systemId,
           customerName: system.currentSession.customerName,
+          controllerCount: system.currentSession.controllerCount,
           startTime: system.currentSession.startTime,
           endTime,
           duration,
           cost,
-          pricePerMinute: system.currentSession.pricePerMinute,
+          hourlyRate: HOURLY_RATES[system.currentSession.controllerCount],
         });
 
+        // بازنشانی سیستم
         system.status = "available";
         system.currentSession = null;
 
@@ -381,6 +428,7 @@
         renderStats();
       }
 
+      // به‌روزرسانی تایمر سیستم
       function updateSystemTimer(systemId) {
         const system = systems.find((s) => s.id === systemId);
         if (!system || !system.currentSession) return;
@@ -388,6 +436,7 @@
         const now = new Date();
         const elapsed = now - system.currentSession.startTime;
 
+        // نمایش زمان
         const hours = Math.floor(elapsed / 3600000);
         const minutes = Math.floor((elapsed % 3600000) / 60000);
         const seconds = Math.floor((elapsed % 60000) / 1000);
@@ -401,14 +450,15 @@
             .padStart(2, "0")}`;
         }
 
-        const cost =
-          Math.ceil(elapsed / 60000) * system.currentSession.pricePerMinute;
+        // محاسبه و نمایش هزینه
+        const cost = calculateCost(system.currentSession.controllerCount, elapsed);
         const costDisplay = document.getElementById(`cost-${systemId}`);
         if (costDisplay) {
-          costDisplay.textContent = cost;
+          costDisplay.textContent = cost.toLocaleString();
         }
       }
 
+      // نمایش سیستم‌های فعال
       function renderSystems() {
         activeSystemsContainer.innerHTML = "";
 
@@ -428,9 +478,13 @@
                             <span>خالی</span>
                         </div>
                         <div class="input-group">
-                            <label for="price-${system.id}">قیمت هر دقیقه (تومان):</label>
-                            <input type="number" id="price-${system.id}" value="${system.pricePerMinute}" 
-                                   onchange="updateSystemPrice(${system.id}, this.value)">
+                            <label for="controllers-${system.id}">تعداد دسته:</label>
+                            <select id="controllers-${system.id}" onchange="updateControllerCount(${system.id}, this.value)">
+                              <option value="1" ${system.controllerCount === 1 ? 'selected' : ''}>1 دسته (40,000 تومان/ساعت)</option>
+                              <option value="2" ${system.controllerCount === 2 ? 'selected' : ''}>2 دسته (60,000 تومان/ساعت)</option>
+                              <option value="3" ${system.controllerCount === 3 ? 'selected' : ''}>3 دسته (80,000 تومان/ساعت)</option>
+                              <option value="4" ${system.controllerCount === 4 ? 'selected' : ''}>4 دسته (100,000 تومان/ساعت)</option>
+                            </select>
                         </div>
                     `;
             actionButton = `<button class="start-btn" onclick="startSession(${system.id})">شروع </button>`;
@@ -439,8 +493,7 @@
             const hours = Math.floor(elapsed / 3600000);
             const minutes = Math.floor((elapsed % 3600000) / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
-            const cost =
-              Math.ceil(elapsed / 60000) * system.currentSession.pricePerMinute;
+            const cost = calculateCost(system.currentSession.controllerCount, elapsed);
 
             cardContent = `
                         <div class="system-header">
@@ -462,12 +515,12 @@
                         <div class="cost-display">
                             هزینه: <span id="cost-${
                               system.id
-                            }">${cost}</span> تومان
+                            }">${cost.toLocaleString()}</span> تومان
                         </div>
                         <div class="input-group">
-                            <label>قیمت هر دقیقه: ${
-                              system.currentSession.pricePerMinute
-                            } تومان</label>
+                            <label>تعداد دسته: ${
+                              system.currentSession.controllerCount
+                            } (${HOURLY_RATES[system.currentSession.controllerCount].toLocaleString()} تومان/ساعت)</label>
                         </div>
                     `;
             actionButton = `<button class="stop-btn" onclick="stopSession(${system.id})">اتمام </button>`;
@@ -476,16 +529,17 @@
           systemCard.innerHTML = cardContent + actionButton;
           activeSystemsContainer.appendChild(systemCard);
         });
-
+        
         updateCounts();
       }
 
+      // نمایش sessionهای تمام شده
       function renderFinishedSessions() {
         finishedSystemsContainer.innerHTML = "";
 
         if (finishedSessions.length === 0) {
           finishedSystemsContainer.innerHTML =
-            "<p>هیچ سانس تمام شده‌ای وجود ندارد.</p>";
+            "<p>هیچ session تمام شده‌ای وجود ندارد.</p>";
           updateCounts();
           return;
         }
@@ -494,7 +548,8 @@
           const sessionCard = document.createElement("div");
           sessionCard.className = "system-card finished";
 
-          const durationMinutes = Math.floor(session.duration / 60000);
+          const durationHours = Math.floor(session.duration / 3600000);
+          const durationMinutes = Math.floor((session.duration % 3600000) / 60000);
           const durationSeconds = Math.floor((session.duration % 60000) / 1000);
           const startTime = new Date(session.startTime);
           const endTime = new Date(session.endTime);
@@ -510,48 +565,60 @@
                         <strong>مشتری:</strong> ${session.customerName}
                     </div>
                     <div>
+                        <strong>تعداد دسته:</strong> ${session.controllerCount} (${session.hourlyRate.toLocaleString()} تومان/ساعت)
+                    </div>
+                    <div>
                         <strong>زمان شروع:</strong> ${startTimeStr}
                     </div>
                     <div>
                         <strong>زمان پایان:</strong> ${endTimeStr}
                     </div>
                     <div>
-                        <strong>مدت زمان:</strong> ${durationMinutes} دقیقه و ${durationSeconds} ثانیه
+                        <strong>مدت زمان:</strong> ${durationHours} ساعت و ${durationMinutes} دقیقه و ${durationSeconds} ثانیه
                     </div>
                     <div class="cost-display">
-                        <strong>هزینه:</strong> ${session.cost} تومان
-                    </div>
-                    <div>
-                        <strong>قیمت هر دقیقه:</strong> ${session.pricePerMinute} تومان
+                        <strong>هزینه:</strong> ${session.cost.toLocaleString()} تومان
                     </div>
                 `;
 
           finishedSystemsContainer.appendChild(sessionCard);
         });
-
+        
         updateCounts();
       }
 
+      // نمایش آمار و اطلاعات
       function renderStats() {
         statsContainer.innerHTML = "";
-
-        const totalRevenue = finishedSessions.reduce(
-          (sum, session) => sum + session.cost,
-          0
-        );
-
+        
+        // محاسبه مجموع درآمد
+        const totalRevenue = finishedSessions.reduce((sum, session) => sum + session.cost, 0);
+        
+        // محاسبه تعداد استفاده از هر دستگاه
         const systemUsage = {};
-        finishedSessions.forEach((session) => {
+        finishedSessions.forEach(session => {
           if (!systemUsage[session.systemId]) {
             systemUsage[session.systemId] = 0;
           }
           systemUsage[session.systemId]++;
         });
-
-        const activeSessions = systems.filter(
-          (s) => s.status === "busy"
-        ).length;
-
+        
+        // محاسبه درآمد بر اساس تعداد دسته
+        const revenueByControllers = {
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0
+        };
+        
+        finishedSessions.forEach(session => {
+          revenueByControllers[session.controllerCount] += session.cost;
+        });
+        
+        // محاسبه تعداد جلسات فعال
+        const activeSessions = systems.filter(s => s.status === "busy").length;
+        
+        // ایجاد کارت آمار کلی
         const generalStatsCard = document.createElement("div");
         generalStatsCard.className = "stat-card";
         generalStatsCard.innerHTML = `
@@ -574,11 +641,12 @@
           </div>
         `;
         statsContainer.appendChild(generalStatsCard);
-
+        
+        // ایجاد کارت استفاده از سیستم‌ها
         const usageStatsCard = document.createElement("div");
         usageStatsCard.className = "stat-card";
-
-        let usageItemsHTML = "<h3>تعداد استفاده از هر سیستم</h3>";
+        
+        let usageItemsHTML = '<h3>تعداد استفاده از هر سیستم</h3>';
         for (let i = 1; i <= systems.length; i++) {
           usageItemsHTML += `
             <div class="usage-item">
@@ -587,57 +655,61 @@
             </div>
           `;
         }
-
+        
         usageStatsCard.innerHTML = usageItemsHTML;
         statsContainer.appendChild(usageStatsCard);
-
+        
+        // ایجاد کارت درآمد بر اساس تعداد دسته
+        const revenueStatsCard = document.createElement("div");
+        revenueStatsCard.className = "stat-card";
+        
+        let revenueItemsHTML = '<h3>درآمد بر اساس تعداد دسته</h3>';
+        for (let i = 1; i <= 4; i++) {
+          revenueItemsHTML += `
+            <div class="usage-item">
+              <span>${i} دسته:</span>
+              <span class="stat-value">${revenueByControllers[i].toLocaleString()} تومان</span>
+            </div>
+          `;
+        }
+        
+        revenueStatsCard.innerHTML = revenueItemsHTML;
+        statsContainer.appendChild(revenueStatsCard);
+        
+        // ایجاد کارت آخرین جلسات
         if (finishedSessions.length > 0) {
           const recentSessionsCard = document.createElement("div");
           recentSessionsCard.className = "stat-card";
-
-          let recentSessionsHTML = "<h3>آخرین جلسات</h3>";
+          
+          let recentSessionsHTML = '<h3>آخرین جلسات</h3>';
           const recentSessions = finishedSessions.slice(0, 5);
-
-          recentSessions.forEach((session) => {
-            const durationMinutes = Math.floor(session.duration / 60000);
+          
+          recentSessions.forEach(session => {
+            const durationHours = Math.floor(session.duration / 3600000);
             recentSessionsHTML += `
               <div class="stat-item">
-                <span>سیستم ${session.systemId} (${
-              session.customerName
-            }):</span>
-                <span class="stat-value">${durationMinutes} دقیقه - ${session.cost.toLocaleString()} تومان</span>
+                <span>سیستم ${session.systemId} (${session.customerName} - ${session.controllerCount} دسته):</span>
+                <span class="stat-value">${durationHours} ساعت - ${session.cost.toLocaleString()} تومان</span>
               </div>
             `;
           });
-
+          
           recentSessionsCard.innerHTML = recentSessionsHTML;
           statsContainer.appendChild(recentSessionsCard);
         }
       }
 
-      function updateSystemPrice(systemId, price) {
+      // به‌روزرسانی تعداد دسته‌های یک سیستم
+      function updateControllerCount(systemId, count) {
         const system = systems.find((s) => s.id === systemId);
         if (system) {
-          system.pricePerMinute = parseInt(price) || 500;
-          if (system.status === "busy") {
-            system.currentSession.pricePerMinute = system.pricePerMinute;
-          }
+          const parsedCount = Math.min(Math.max(parseInt(count) || 1, 1), 4);
+          system.controllerCount = parsedCount;
           saveData();
         }
       }
 
-      function updateAllPrices() {
-        const newPrice = parseInt(globalPricePerMinuteInput.value) || 500;
-        systems.forEach((system) => {
-          system.pricePerMinute = newPrice;
-          if (system.status === "busy") {
-            system.currentSession.pricePerMinute = newPrice;
-          }
-        });
-        saveData();
-        renderSystems();
-      }
-
+      // حذف session تمام شده
       function deleteFinishedSession(index) {
         if (confirm("آیا از حذف این session مطمئن هستید؟")) {
           finishedSessions.splice(index, 1);
@@ -647,17 +719,14 @@
         }
       }
 
+      // حذف همه جلسات تمام شده
       function clearAllFinishedSessions() {
         if (finishedSessions.length === 0) {
           alert("هیچ جلسه تمام شده‌ای وجود ندارد!");
           return;
         }
-
-        if (
-          confirm(
-            "آیا از حذف همه جلسات تمام شده مطمئن هستید؟ این عمل غیرقابل بازگشت است!"
-          )
-        ) {
+        
+        if (confirm("آیا از حذف همه جلسات تمام شده مطمئن هستید؟ این عمل غیرقابل بازگشت است!")) {
           finishedSessions = [];
           saveData();
           renderFinishedSessions();
@@ -665,14 +734,16 @@
         }
       }
 
+      // به روز رسانی تعداد سیستم‌های فعال و جلسات تمام شده
       function updateCounts() {
-        const activeCount = systems.filter((s) => s.status === "busy").length;
+        const activeCount = systems.filter(s => s.status === "busy").length;
         const finishedCount = finishedSessions.length;
-
+        
         activeCountSpan.textContent = activeCount;
         finishedCountSpan.textContent = finishedCount;
       }
 
+      // تغییر تب‌ها
       tabs.forEach((tab) => {
         tab.addEventListener("click", () => {
           tabs.forEach((t) => t.classList.remove("active"));
@@ -682,21 +753,22 @@
           document
             .getElementById(`${tab.dataset.tab}-systems`)
             .classList.add("active");
-
+            
+          // اگر تب آمار انتخاب شد، آمار را به روز رسانی کنید
           if (tab.dataset.tab === "stats") {
             renderStats();
           }
         });
       });
 
+      // توابع عمومی برای استفاده در HTML
       window.startSession = startSession;
       window.stopSession = stopSession;
-      window.updateSystemPrice = updateSystemPrice;
+      window.updateControllerCount = updateControllerCount;
       window.deleteFinishedSession = deleteFinishedSession;
       window.clearAllFinishedSessions = clearAllFinishedSessions;
 
-      updatePriceBtn.addEventListener("click", updateAllPrices);
-
+      // وقتی صفحه کاملاً بارگذاری شد
       window.addEventListener("load", () => {
         loadData();
         renderSystems();
