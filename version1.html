@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FARA GAME</title>
+    <style>
+      * {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      body {
+        background-color: #f5f5f5;
+        margin: 0;
+        padding: 20px;
+        color: #333;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #2c3e50;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .price-setting {
+        background-color: #b2cae2;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+      .input-group {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-evenly;
+        flex-direction: row;
+        margin-bottom: 10px;
+      }
+      label {
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select,
+      button {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        margin: 5px 0;
+        padding: 10px 40px;
+      }
+      button:hover {
+        background-color: #2980b9;
+      }
+      .systems-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+      }
+      .system-card {
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .system-card.active {
+        border-left: 5px solid #2ecc71;
+      }
+      .system-card.finished {
+        border-left: 5px solid #e74c3c;
+        opacity: 0.8;
+      }
+      .system-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .system-title {
+        font-weight: bold;
+        font-size: 18px;
+        color: #2c3e50;
+      }
+      .timer-display {
+        font-size: 24px;
+        text-align: center;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+      }
+      .cost-display {
+        font-size: 20px;
+        text-align: center;
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #e8f4fc;
+        border-radius: 5px;
+        color: #2c3e50;
+      }
+      .customer-info {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+      }
+      .start-btn {
+        background-color: #2ecc71;
+        width: 100%;
+      }
+      .stop-btn {
+        background-color: #e74c3c;
+        width: 100%;
+      }
+      .tabs {
+        display: flex;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #ddd;
+      }
+      .tab {
+        padding: 10px 20px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+      }
+      .tab.active {
+        border-bottom: 3px solid #3498db;
+        font-weight: bold;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+      }
+      .delete-btn {
+        background-color: #e74c3c;
+        padding: 5px 10px;
+        font-size: 14px;
+      }
+      .delete-btn:hover {
+        background-color: #c0392b;
+      }
+      .clear-all-btn {
+        background-color: #e74c3c;
+        margin-bottom: 15px;
+      }
+      .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+      .stat-card {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .stat-card h3 {
+        margin-top: 0;
+        color: #2c3e50;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+      }
+      .stat-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .stat-value {
+        font-weight: bold;
+      }
+      .system-usage {
+        margin-top: 15px;
+      }
+      .usage-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+      table {
+        border: 1px solid rgb(0, 0, 0);
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>FARA GAME</h1>
+      <div class="price-setting">
+        <div class="input-group">
+          <div>
+            <label for="globalPricePerMinute">قیمت هر دقیقه (تومان):</label>
+            <input type="number" id="globalPricePerMinute" value="1000" />
+          </div>
+          <button id="updatePriceBtn">بروزرسانی قیمت برای همه سیستم‌ها</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" data-tab="active">
+          سیستم‌های فعال (<span id="active-count">0</span> عدد)
+        </div>
+        <div class="tab" data-tab="finished">
+          جلسات تمام شده (<span id="finished-count">0</span> عدد)
+        </div>
+        <div class="tab" data-tab="stats">اطلاعات و آمار</div>
+      </div>
+
+      <div class="tab-content active" id="active-systems">
+        <div class="systems-container" id="activeSystemsContainer"></div>
+      </div>
+
+      <div class="tab-content" id="finished-systems">
+        <button class="clear-all-btn" onclick="clearAllFinishedSessions()">
+          حذف همه جلسات تمام شده
+        </button>
+        <div class="systems-container" id="finishedSystemsContainer"></div>
+      </div>
+
+      <div class="tab-content" id="stats-systems">
+        <div class="stats-container" id="statsContainer"></div>
+      </div>
+    </div>
+
+    <script>
+      const activeSystemsContainer = document.getElementById(
+        "activeSystemsContainer"
+      );
+      const finishedSystemsContainer = document.getElementById(
+        "finishedSystemsContainer"
+      );
+      const statsContainer = document.getElementById("statsContainer");
+      const globalPricePerMinuteInput = document.getElementById(
+        "globalPricePerMinute"
+      );
+      const updatePriceBtn = document.getElementById("updatePriceBtn");
+      const tabs = document.querySelectorAll(".tab");
+      const tabContents = document.querySelectorAll(".tab-content");
+      const activeCountSpan = document.getElementById("active-count");
+      const finishedCountSpan = document.getElementById("finished-count");
+
+      let systems = [];
+      let finishedSessions = [];
+      let timers = {};
+
+      function loadData() {
+        const savedData = JSON.parse(
+          localStorage.getItem("gameNetAdvancedData")
+        );
+        if (savedData) {
+          systems =
+            savedData.systems ||
+            Array(5)
+              .fill()
+              .map((_, i) => ({
+                id: i + 1,
+                pricePerMinute: 500,
+                status: "available",
+                currentSession: null,
+              }));
+          finishedSessions = savedData.finishedSessions || [];
+
+          systems.forEach((system) => {
+            if (system.status === "busy" && system.currentSession) {
+              system.currentSession.startTime = new Date(
+                system.currentSession.startTime
+              );
+              startTimerForSystem(system.id);
+            }
+          });
+        } else {
+          systems = Array(5)
+            .fill()
+            .map((_, i) => ({
+              id: i + 1,
+              pricePerMinute: 500,
+              status: "available",
+              currentSession: null,
+            }));
+          finishedSessions = [];
+        }
+
+        updateCounts();
+      }
+
+      function saveData() {
+        const systemsToSave = systems.map((system) => {
+          if (system.status === "busy" && system.currentSession) {
+            return {
+              ...system,
+              currentSession: {
+                ...system.currentSession,
+                startTime: system.currentSession.startTime.toISOString(),
+              },
+            };
+          }
+          return system;
+        });
+
+        localStorage.setItem(
+          "gameNetAdvancedData",
+          JSON.stringify({
+            systems: systemsToSave,
+            finishedSessions,
+          })
+        );
+
+        updateCounts();
+      }
+
+      function startTimerForSystem(systemId) {
+        if (timers[systemId]) {
+          clearInterval(timers[systemId]);
+        }
+
+        timers[systemId] = setInterval(() => updateSystemTimer(systemId), 1000);
+        updateSystemTimer(systemId);
+      }
+
+      function startSession(systemId) {
+        const system = systems.find((s) => s.id === systemId);
+        if (!system || system.status !== "available") return;
+
+        const customerName = prompt("نام مشتری را وارد کنید:", "مشتری ناشناس");
+        if (customerName === null) return;
+
+        system.status = "busy";
+        system.currentSession = {
+          customerName,
+          startTime: new Date(),
+          pricePerMinute: system.pricePerMinute,
+        };
+
+        startTimerForSystem(systemId);
+        saveData();
+        renderSystems();
+      }
+
+      function stopSession(systemId) {
+        const system = systems.find((s) => s.id === systemId);
+        if (!system || system.status !== "busy") return;
+
+        clearInterval(timers[systemId]);
+        delete timers[systemId];
+
+        const endTime = new Date();
+        const duration = endTime - system.currentSession.startTime;
+        const cost =
+          Math.ceil(duration / 60000) * system.currentSession.pricePerMinute;
+
+        finishedSessions.unshift({
+          systemId,
+          customerName: system.currentSession.customerName,
+          startTime: system.currentSession.startTime,
+          endTime,
+          duration,
+          cost,
+          pricePerMinute: system.currentSession.pricePerMinute,
+        });
+
+        system.status = "available";
+        system.currentSession = null;
+
+        saveData();
+        renderSystems();
+        renderFinishedSessions();
+        renderStats();
+      }
+
+      function updateSystemTimer(systemId) {
+        const system = systems.find((s) => s.id === systemId);
+        if (!system || !system.currentSession) return;
+
+        const now = new Date();
+        const elapsed = now - system.currentSession.startTime;
+
+        const hours = Math.floor(elapsed / 3600000);
+        const minutes = Math.floor((elapsed % 3600000) / 60000);
+        const seconds = Math.floor((elapsed % 60000) / 1000);
+
+        const timeDisplay = document.getElementById(`time-${systemId}`);
+        if (timeDisplay) {
+          timeDisplay.textContent = `${hours
+            .toString()
+            .padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds
+            .toString()
+            .padStart(2, "0")}`;
+        }
+
+        const cost =
+          Math.ceil(elapsed / 60000) * system.currentSession.pricePerMinute;
+        const costDisplay = document.getElementById(`cost-${systemId}`);
+        if (costDisplay) {
+          costDisplay.textContent = cost;
+        }
+      }
+
+      function renderSystems() {
+        activeSystemsContainer.innerHTML = "";
+
+        systems.forEach((system) => {
+          const systemCard = document.createElement("div");
+          systemCard.className = `system-card ${
+            system.status === "busy" ? "active" : ""
+          }`;
+
+          let cardContent = "";
+          let actionButton = "";
+
+          if (system.status === "available") {
+            cardContent = `
+                        <div class="system-header">
+                            <div class="system-title">سیستم ${system.id}</div>
+                            <span>خالی</span>
+                        </div>
+                        <div class="input-group">
+                            <label for="price-${system.id}">قیمت هر دقیقه (تومان):</label>
+                            <input type="number" id="price-${system.id}" value="${system.pricePerMinute}" 
+                                   onchange="updateSystemPrice(${system.id}, this.value)">
+                        </div>
+                    `;
+            actionButton = `<button class="start-btn" onclick="startSession(${system.id})">شروع </button>`;
+          } else {
+            const elapsed = new Date() - system.currentSession.startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const cost =
+              Math.ceil(elapsed / 60000) * system.currentSession.pricePerMinute;
+
+            cardContent = `
+                        <div class="system-header">
+                            <div class="system-title">سیستم ${system.id}</div>
+                            <span>در حال استفاده</span>
+                        </div>
+                        <div class="customer-info">
+                            <strong>مشتری:</strong> ${
+                              system.currentSession.customerName
+                            }
+                        </div>
+                        <div class="timer-display">
+                            زمان سپری شده: <span id="time-${system.id}">${hours
+              .toString()
+              .padStart(2, "0")}:${minutes
+              .toString()
+              .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}</span>
+                        </div>
+                        <div class="cost-display">
+                            هزینه: <span id="cost-${
+                              system.id
+                            }">${cost}</span> تومان
+                        </div>
+                        <div class="input-group">
+                            <label>قیمت هر دقیقه: ${
+                              system.currentSession.pricePerMinute
+                            } تومان</label>
+                        </div>
+                    `;
+            actionButton = `<button class="stop-btn" onclick="stopSession(${system.id})">اتمام </button>`;
+          }
+
+          systemCard.innerHTML = cardContent + actionButton;
+          activeSystemsContainer.appendChild(systemCard);
+        });
+
+        updateCounts();
+      }
+
+      function renderFinishedSessions() {
+        finishedSystemsContainer.innerHTML = "";
+
+        if (finishedSessions.length === 0) {
+          finishedSystemsContainer.innerHTML =
+            "<p>هیچ سانس تمام شده‌ای وجود ندارد.</p>";
+          updateCounts();
+          return;
+        }
+
+        finishedSessions.forEach((session, index) => {
+          const sessionCard = document.createElement("div");
+          sessionCard.className = "system-card finished";
+
+          const durationMinutes = Math.floor(session.duration / 60000);
+          const durationSeconds = Math.floor((session.duration % 60000) / 1000);
+          const startTime = new Date(session.startTime);
+          const endTime = new Date(session.endTime);
+          const startTimeStr = startTime.toLocaleTimeString("fa-IR");
+          const endTimeStr = endTime.toLocaleTimeString("fa-IR");
+
+          sessionCard.innerHTML = `
+                    <div class="system-header">
+                        <div class="system-title">سیستم ${session.systemId}</div>
+                        <button class="delete-btn" onclick="deleteFinishedSession(${index})">حذف</button>
+                    </div>
+                    <div class="customer-info">
+                        <strong>مشتری:</strong> ${session.customerName}
+                    </div>
+                    <div>
+                        <strong>زمان شروع:</strong> ${startTimeStr}
+                    </div>
+                    <div>
+                        <strong>زمان پایان:</strong> ${endTimeStr}
+                    </div>
+                    <div>
+                        <strong>مدت زمان:</strong> ${durationMinutes} دقیقه و ${durationSeconds} ثانیه
+                    </div>
+                    <div class="cost-display">
+                        <strong>هزینه:</strong> ${session.cost} تومان
+                    </div>
+                    <div>
+                        <strong>قیمت هر دقیقه:</strong> ${session.pricePerMinute} تومان
+                    </div>
+                `;
+
+          finishedSystemsContainer.appendChild(sessionCard);
+        });
+
+        updateCounts();
+      }
+
+      function renderStats() {
+        statsContainer.innerHTML = "";
+
+        const totalRevenue = finishedSessions.reduce(
+          (sum, session) => sum + session.cost,
+          0
+        );
+
+        const systemUsage = {};
+        finishedSessions.forEach((session) => {
+          if (!systemUsage[session.systemId]) {
+            systemUsage[session.systemId] = 0;
+          }
+          systemUsage[session.systemId]++;
+        });
+
+        const activeSessions = systems.filter(
+          (s) => s.status === "busy"
+        ).length;
+
+        const generalStatsCard = document.createElement("div");
+        generalStatsCard.className = "stat-card";
+        generalStatsCard.innerHTML = `
+          <h3>آمار کلی</h3>
+          <div class="stat-item">
+            <span>تعداد سیستم‌ها:</span>
+            <span class="stat-value">${systems.length} عدد</span>
+          </div>
+          <div class="stat-item">
+            <span>سیستم‌های فعال:</span>
+            <span class="stat-value">${activeSessions} عدد</span>
+          </div>
+          <div class="stat-item">
+            <span>جلسات تمام شده:</span>
+            <span class="stat-value">${finishedSessions.length} عدد</span>
+          </div>
+          <div class="stat-item">
+            <span>مجموع درآمد:</span>
+            <span class="stat-value">${totalRevenue.toLocaleString()} تومان</span>
+          </div>
+        `;
+        statsContainer.appendChild(generalStatsCard);
+
+        const usageStatsCard = document.createElement("div");
+        usageStatsCard.className = "stat-card";
+
+        let usageItemsHTML = "<h3>تعداد استفاده از هر سیستم</h3>";
+        for (let i = 1; i <= systems.length; i++) {
+          usageItemsHTML += `
+            <div class="usage-item">
+              <span>سیستم ${i}:</span>
+              <span class="stat-value">${systemUsage[i] || 0} بار</span>
+            </div>
+          `;
+        }
+
+        usageStatsCard.innerHTML = usageItemsHTML;
+        statsContainer.appendChild(usageStatsCard);
+
+        if (finishedSessions.length > 0) {
+          const recentSessionsCard = document.createElement("div");
+          recentSessionsCard.className = "stat-card";
+
+          let recentSessionsHTML = "<h3>آخرین جلسات</h3>";
+          const recentSessions = finishedSessions.slice(0, 5);
+
+          recentSessions.forEach((session) => {
+            const durationMinutes = Math.floor(session.duration / 60000);
+            recentSessionsHTML += `
+              <div class="stat-item">
+                <span>سیستم ${session.systemId} (${
+              session.customerName
+            }):</span>
+                <span class="stat-value">${durationMinutes} دقیقه - ${session.cost.toLocaleString()} تومان</span>
+              </div>
+            `;
+          });
+
+          recentSessionsCard.innerHTML = recentSessionsHTML;
+          statsContainer.appendChild(recentSessionsCard);
+        }
+      }
+
+      function updateSystemPrice(systemId, price) {
+        const system = systems.find((s) => s.id === systemId);
+        if (system) {
+          system.pricePerMinute = parseInt(price) || 500;
+          if (system.status === "busy") {
+            system.currentSession.pricePerMinute = system.pricePerMinute;
+          }
+          saveData();
+        }
+      }
+
+      function updateAllPrices() {
+        const newPrice = parseInt(globalPricePerMinuteInput.value) || 500;
+        systems.forEach((system) => {
+          system.pricePerMinute = newPrice;
+          if (system.status === "busy") {
+            system.currentSession.pricePerMinute = newPrice;
+          }
+        });
+        saveData();
+        renderSystems();
+      }
+
+      function deleteFinishedSession(index) {
+        if (confirm("آیا از حذف این session مطمئن هستید؟")) {
+          finishedSessions.splice(index, 1);
+          saveData();
+          renderFinishedSessions();
+          renderStats();
+        }
+      }
+
+      function clearAllFinishedSessions() {
+        if (finishedSessions.length === 0) {
+          alert("هیچ جلسه تمام شده‌ای وجود ندارد!");
+          return;
+        }
+
+        if (
+          confirm(
+            "آیا از حذف همه جلسات تمام شده مطمئن هستید؟ این عمل غیرقابل بازگشت است!"
+          )
+        ) {
+          finishedSessions = [];
+          saveData();
+          renderFinishedSessions();
+          renderStats();
+        }
+      }
+
+      function updateCounts() {
+        const activeCount = systems.filter((s) => s.status === "busy").length;
+        const finishedCount = finishedSessions.length;
+
+        activeCountSpan.textContent = activeCount;
+        finishedCountSpan.textContent = finishedCount;
+      }
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          tabs.forEach((t) => t.classList.remove("active"));
+          tabContents.forEach((c) => c.classList.remove("active"));
+
+          tab.classList.add("active");
+          document
+            .getElementById(`${tab.dataset.tab}-systems`)
+            .classList.add("active");
+
+          if (tab.dataset.tab === "stats") {
+            renderStats();
+          }
+        });
+      });
+
+      window.startSession = startSession;
+      window.stopSession = stopSession;
+      window.updateSystemPrice = updateSystemPrice;
+      window.deleteFinishedSession = deleteFinishedSession;
+      window.clearAllFinishedSessions = clearAllFinishedSessions;
+
+      updatePriceBtn.addEventListener("click", updateAllPrices);
+
+      window.addEventListener("load", () => {
+        loadData();
+        renderSystems();
+        renderFinishedSessions();
+        renderStats();
+      });
+    </script>
+  </body>
+</html>
